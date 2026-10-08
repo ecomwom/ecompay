@@ -38,6 +38,22 @@ src/
 supabase/migrations/    schema
 ```
 
+## Repository and deploys
+
+Source of truth: [github.com/ecomwom/ecompay](https://github.com/ecomwom/ecompay). The Vercel project
+(`dropicommunities/ecompay`) is connected to it: every push to `main` deploys to production
+(`ecompay.micomunidaddropi.com`); other branches and pull requests get preview deployments.
+
+New machine:
+
+```bash
+git clone https://github.com/ecomwom/ecompay.git && cd ecompay
+pnpm install
+doppler login       # pick the workplace that owns the `ecompay` project
+doppler setup       # uses doppler.yaml (project ecompay, config dev)
+pnpm dev
+```
+
 ## Setup
 
 ```bash
