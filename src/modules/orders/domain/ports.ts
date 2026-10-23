@@ -18,6 +18,8 @@ export interface OrderRepository {
   findByCheckoutToken(checkoutToken: string): Promise<Order | null>;
   findByPaymentId(confioPaymentId: string): Promise<Order | null>;
   listByProduct(productId: string): Promise<Order[]>;
+  /** Newest first; optionally scoped to one product. */
+  list(filter?: { productId?: string }): Promise<Order[]>;
   applyPayment(orderId: string, snapshot: PaymentSnapshot): Promise<Order>;
   markFailed(orderId: string): Promise<void>;
 }

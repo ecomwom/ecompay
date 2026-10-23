@@ -65,6 +65,12 @@ export class InMemoryOrderRepository implements OrderRepository {
     return [...this.orders.values()].filter((o) => o.productId === productId);
   }
 
+  async list(filter: { productId?: string } = {}) {
+    return [...this.orders.values()]
+      .filter((o) => !filter.productId || o.productId === filter.productId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
   async applyPayment(orderId: string, snapshot: PaymentSnapshot): Promise<Order> {
     const current = this.orders.get(orderId);
     if (!current || this.failApply) throw new Error("order not found");

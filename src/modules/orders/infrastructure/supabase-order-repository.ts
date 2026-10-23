@@ -91,6 +91,14 @@ export class SupabaseOrderRepository implements OrderRepository {
     return (data as OrderRow[]).map(toOrder);
   }
 
+  async list(filter: { productId?: string } = {}): Promise<Order[]> {
+    let query = this.db.from("orders").select(ORDER_COLUMNS);
+    if (filter.productId) query = query.eq("product_id", filter.productId);
+    const { data, error } = await query.order("created_at", { ascending: false }).limit(5000);
+    if (error) throw error;
+    return (data as OrderRow[]).map(toOrder);
+  }
+
   /**
    * Compare-and-set on `status` so a stale snapshot never regresses the order (see
    * canTransitionOrderStatus); retries once on a concurrent change. When the status

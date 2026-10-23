@@ -1,17 +1,28 @@
 import Link from "next/link";
 
+import { BuyersSummaryCards } from "@/components/admin/buyers-panel";
 import { requireAdmin } from "@/lib/auth/admin";
+import { summarizeOrders } from "@/modules/orders/domain/buyers-report";
 import { formatCop } from "@/modules/products/domain/money";
 import { getContainer } from "@/server/container";
 
 export default async function AdminProductsPage() {
   await requireAdmin();
-  const products = await getContainer().products.list();
+  const { products: productRepo, orders: orderRepo } = getContainer();
+  const [products, orders] = await Promise.all([productRepo.list(), orderRepo.list()]);
 
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Productos</h1>
+        <h1 className="text-2xl font-semibold">Resumen</h1>
+        <Link href="/admin/compras" className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">
+          Ver compradores
+        </Link>
+      </div>
+      <BuyersSummaryCards summary={summarizeOrders(orders)} />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold">Productos</h2>
         <Link href="/admin/products/new" className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
           Nuevo producto
         </Link>

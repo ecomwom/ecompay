@@ -1,15 +1,5 @@
+import { ORDER_STATUS_LABELS } from "@/modules/orders/domain/buyers-report";
 import type { OrderStatus } from "@/modules/orders/domain/order";
-
-const labels: Record<OrderStatus, string> = {
-  PENDING: "Pendiente",
-  PAID: "Pagado",
-  UNDER_REVIEW: "En revisión",
-  DISPUTED: "En disputa",
-  REFUNDED: "Reembolsado",
-  EXPIRED: "Expirado",
-  CANCELED: "Cancelado",
-  FAILED: "Fallido",
-};
 
 const tones: Record<OrderStatus, string> = {
   PENDING: "bg-amber-100 text-amber-800",
@@ -25,7 +15,7 @@ const tones: Record<OrderStatus, string> = {
 export function StatusBadge({ status }: { status: OrderStatus }) {
   return (
     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${tones[status]}`}>
-      {labels[status]}
+      {ORDER_STATUS_LABELS[status]}
     </span>
   );
 }

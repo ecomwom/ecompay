@@ -18,11 +18,21 @@ export default async function AdminPanelLayout({ children }: LayoutProps<"/admin
           <Link href="/admin" className="text-lg font-semibold">
             Ecompay · Admin
           </Link>
-          <form action={logoutAction}>
-            <Button type="submit" variant="secondary">
-              Cerrar sesión
-            </Button>
-          </form>
+          <div className="flex items-center gap-4">
+            <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
+              <Link href="/admin" className="hover:text-slate-900">
+                Productos
+              </Link>
+              <Link href="/admin/compras" className="hover:text-slate-900">
+                Compradores
+              </Link>
+            </nav>
+            <form action={logoutAction}>
+              <Button type="submit" variant="secondary">
+                Cerrar sesión
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 py-8">{children}</main>
