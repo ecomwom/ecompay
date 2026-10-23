@@ -5,12 +5,14 @@ import { redirect } from "next/navigation";
 
 import type { ProductFormState } from "@/components/admin/product-form-state";
 import type { QuestionsState } from "@/components/admin/questions-state";
+import type { SyncPaymentsState } from "@/components/admin/sync-payments-button";
 import { endAdminSession, requireAdmin } from "@/lib/auth/admin";
 import {
   createProduct,
   saveProductQuestions,
   updateProduct,
 } from "@/modules/products/application/manage-products";
+import { syncPendingOrders } from "@/modules/orders/application/sync-pending-orders";
 import { getContainer } from "@/server/container";
 import { isUuid } from "@/lib/uuid";
 
@@ -82,6 +84,22 @@ export async function saveQuestionsAction(
   }
   revalidatePath(`/admin/products/${productId}`);
   return { success: "Preguntas guardadas." };
+}
+
+export async function syncPaymentsAction(): Promise<SyncPaymentsState> {
+  await requireAdmin();
+  const { orders, gateway } = getContainer();
+  try {
+    const result = await syncPendingOrders({ orders, gateway, logger: console });
+    revalidatePath("/admin", "layout");
+    const failed = result.failed > 0 ? ` ${result.failed} no se pudieron consultar.` : "";
+    return {
+      success: `Revisamos ${result.checked} pedidos pendientes: ${result.newlyPaid} ya estaban pagados en Confío.${failed}`,
+    };
+  } catch (error) {
+    console.error("[sync] failed", error);
+    return { error: "No pudimos consultar Confío. Intenta de nuevo." };
+  }
 }
 
 export async function logoutAction(): Promise<void> {

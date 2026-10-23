@@ -20,6 +20,8 @@ const envSchema = z.object({
   ADMIN_PASSWORD: z.string().min(8),
   SESSION_SECRET: z.string().min(32),
   APP_URL: trimmedUrl,
+  // Bearer key for /api/cron/sync-payments; the endpoint is disabled when unset.
+  CRON_SECRET: z.string().min(32).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

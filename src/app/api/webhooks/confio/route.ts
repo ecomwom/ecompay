@@ -35,5 +35,24 @@ export async function POST(request: NextRequest) {
     },
   );
 
+  if (result.status === 401) {
+    // Diagnostics only: which auth channels Confío used, never their values.
+    console.warn("[webhook] unauthorized Confío request", {
+      headerNames: [...request.headers.keys()].sort(),
+      authScheme: request.headers.get("authorization")?.split(" ")[0] ?? null,
+      queryKeys: [...request.nextUrl.searchParams.keys()],
+      bodyKeys: safeTopLevelKeys(rawBody),
+    });
+  }
+
   return NextResponse.json(result.body, { status: result.status });
+}
+
+function safeTopLevelKeys(rawBody: string): string[] | null {
+  try {
+    const parsed: unknown = JSON.parse(rawBody);
+    return parsed && typeof parsed === "object" ? Object.keys(parsed) : null;
+  } catch {
+    return null;
+  }
 }

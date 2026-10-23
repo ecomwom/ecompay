@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { syncPaymentsAction } from "@/app/admin/(panel)/actions";
 import { CopyButton } from "@/components/admin/copy-button";
+import { SyncPaymentsButton } from "@/components/admin/sync-payments-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { BuyersReport, BuyersScope } from "@/modules/orders/application/list-buyers";
 import { formatCop } from "@/modules/products/domain/money";
@@ -46,7 +48,8 @@ export function BuyersPanel({ report, scope, basePath, productId, showProduct = 
             </Link>
           ))}
         </nav>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-start gap-2">
+          <SyncPaymentsButton sync={syncPaymentsAction} />
           {emails.length > 0 ? <CopyButton value={emails.join(", ")} label={`Copiar ${emails.length} correos`} /> : null}
           <a
             href={`/admin/compras/exportar?${exportParams}`}
