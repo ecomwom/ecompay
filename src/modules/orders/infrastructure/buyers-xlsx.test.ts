@@ -24,7 +24,7 @@ it("writes one row per buyer with email and custom answers as columns", async ()
   });
 
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(file);
+  await workbook.xlsx.load(file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer);
   const sheet = workbook.getWorksheet("Compradores")!;
   const header = sheet.getRow(1).values as unknown[];
   expect(header.slice(1)).toEqual([
