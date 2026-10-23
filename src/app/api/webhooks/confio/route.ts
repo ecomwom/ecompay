@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { syncOrderPayment } from "@/modules/orders/application/sync-order-payment";
+import { sha256HexUpper } from "@/lib/crypto";
 import { handleConfioWebhook } from "@/modules/payments/application/handle-confio-webhook";
+import { verifyConfioChecksum } from "@/modules/payments/domain/webhook-signature";
 import { getContainer } from "@/server/container";
 
 export const dynamic = "force-dynamic";
@@ -36,23 +38,43 @@ export async function POST(request: NextRequest) {
   );
 
   if (result.status === 401) {
-    // Diagnostics only: which auth channels Confío used, never their values.
+    // Diagnostics only, never secret values: which auth channels Confío used, token lengths,
+    // 8-char SHA-256 fingerprints, and whether the body checksum matches our key.
+    const authorization = request.headers.get("authorization");
+    const token = authorization?.replace(/^Bearer\s+/i, "").trim() ?? null;
+    const payload = safeParse(rawBody);
     console.warn("[webhook] unauthorized Confío request", {
       headerNames: [...request.headers.keys()].sort(),
-      authScheme: request.headers.get("authorization")?.split(" ")[0] ?? null,
+      authScheme: authorization?.split(" ")[0] ?? null,
       queryKeys: [...request.nextUrl.searchParams.keys()],
-      bodyKeys: safeTopLevelKeys(rawBody),
+      bodyKeys: payload && typeof payload === "object" ? Object.keys(payload) : null,
+      tokenLength: token?.length ?? null,
+      expectedLength: container.env.CONFIO_WEBHOOK_SECRET.length,
+      tokenFingerprint: token ? fingerprint(token) : null,
+      expectedFingerprint: fingerprint(container.env.CONFIO_WEBHOOK_SECRET),
+      tokenIsApiAccessToken: token === container.env.CONFIO_ACCESS_TOKEN,
+      checksumWithOurKey:
+        payload && typeof payload === "object"
+          ? verifyConfioChecksum(
+              payload as Parameters<typeof verifyConfioChecksum>[0],
+              request.headers.get("x-confio-checksum"),
+              container.env.CONFIO_WEBHOOK_SECRET,
+            )
+          : null,
     });
   }
 
   return NextResponse.json(result.body, { status: result.status });
 }
 
-function safeTopLevelKeys(rawBody: string): string[] | null {
+function safeParse(rawBody: string): unknown {
   try {
-    const parsed: unknown = JSON.parse(rawBody);
-    return parsed && typeof parsed === "object" ? Object.keys(parsed) : null;
+    return JSON.parse(rawBody);
   } catch {
     return null;
   }
+}
+
+function fingerprint(value: string): string {
+  return sha256HexUpper(value).slice(0, 8);
 }
